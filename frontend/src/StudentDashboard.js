@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import io from "socket.io-client";
 import { BrowserQRCodeReader } from '@zxing/browser';
@@ -17,8 +17,7 @@ function StudentDashboard() {
   const [error, setError] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [sessionId, setSessionId] = useState("");
-  const [classId, setClassId] = useState("");
-  const [qrToken, setQrToken] = useState("");
+  // Removed unused state: classId, qrToken
   const [manualQrInput, setManualQrInput] = useState("");
   const [deviceFingerprint, setDeviceFingerprint] = useState('');
   const [scanning, setScanning] = useState(false);
@@ -70,8 +69,6 @@ function StudentDashboard() {
     setAttendance([]);
     setMarked(false);
     setSessionId("");
-    setClassId("");
-    setQrToken("");
     setError(null);
     setCameraError(null);
     window.location.search = "";
@@ -96,7 +93,7 @@ function StudentDashboard() {
     }
   };
 
-  const validateQrCode = async (qrUrl) => {
+  const validateQrCode = useCallback(async (qrUrl) => {
     if (!deviceFingerprint) {
       console.error('Device fingerprint not ready');
       return { valid: false, error: 'Device fingerprint not ready. Please reload the page.' };
@@ -118,7 +115,7 @@ function StudentDashboard() {
       console.error('QR validation error:', err);
       return { valid: false, error: err.response?.data?.error || 'Failed to validate QR code' };
     }
-  };
+  }, [deviceFingerprint]);
 
   useEffect(() => {
     scanningRef.current = scanning;
@@ -185,7 +182,7 @@ function StudentDashboard() {
         console.error('Error resetting QR scanner:', err);
       }
     };
-  }, [deviceFingerprint, scanning, processing, cameraError]);
+  }, [deviceFingerprint, scanning, processing, cameraError, validateQrCode]);
 
   // Stop video stream when scanning ends
   useEffect(() => {
@@ -279,7 +276,7 @@ function StudentDashboard() {
     }
   }, [deviceFingerprint, processing]);
 
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const newToken = urlParams.get("token");
     const isMarked = urlParams.get("marked") === "true";
@@ -324,7 +321,7 @@ function StudentDashboard() {
     } finally {
       setProcessing(false);
     }
-  };
+  }, [token, marked, sessionId]);
 
   useEffect(() => {
     socket.on("connect", () => console.log("Student socket connected"));
@@ -333,8 +330,7 @@ function StudentDashboard() {
     socket.on("sessionStarted", ({ sessionId, classId, qrToken }) => {
       console.log('Session started received:', { sessionId, classId, qrToken });
       setSessionId(sessionId);
-      setClassId(classId);
-      setQrToken(qrToken);
+      // Removed setClassId and setQrToken as they were unused
       fetchAttendance();
     });
 
@@ -352,7 +348,7 @@ function StudentDashboard() {
       socket.off("sessionStarted");
       socket.off("sessionEnded");
     };
-  }, [sessionId]);
+  }, [sessionId, fetchAttendance]);
 
   useEffect(() => {
     socket.on('serverShutdown', ({ message }) => {
@@ -375,7 +371,7 @@ function StudentDashboard() {
 
   useEffect(() => {
     fetchAttendance(); // Initial fetch
-  }, []);
+  }, [fetchAttendance]);
 
   if (processing || !deviceFingerprint) {
     return (

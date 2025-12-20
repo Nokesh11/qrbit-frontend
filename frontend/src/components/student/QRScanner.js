@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Box, Typography, Button, TextField, Slider } from '@mui/material';
 
 const QRScanner = ({ 
