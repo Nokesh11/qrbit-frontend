@@ -6,8 +6,9 @@ import SessionControls from './components/professor/SessionControls';
 import AttendanceStats from './components/professor/AttendanceStats';
 import ScannedStudentList from './components/professor/ScannedStudentList';
 import QRDisplay from './components/professor/QRDisplay';
+const BACKEND_URI = 'https://qrbit-backend.onrender.com';
 
-const socket = io('https://qr-backend-3-0.onrender.com', { autoConnect: true });
+const socket = io(BACKEND_URI, { autoConnect: true });
 
 function ProfessorDashboard() {
   const [qrCodeImage, setQrCodeImage] = useState('');
@@ -30,7 +31,7 @@ function ProfessorDashboard() {
 
   const fetchClasses = async () => {
     try {
-      const res = await axios.get('https://qr-backend-3-0.onrender.com/api/classes');
+      const res = await axios.get(`${BACKEND_URI}/api/classes`);
       console.log('Raw API response:', res.data);
       setClassOptions(res.data);
       console.log('Set classOptions:', res.data.length, res.data);
@@ -68,7 +69,7 @@ function ProfessorDashboard() {
     if (now - lastFetch < 500) return; // Debounce to every 500ms
     setLastFetch(now);
     try {
-      const res = await axios.get(`https://qr-backend-3-0.onrender.com/api/qr?sessionId=${sessionId}`);
+      const res = await axios.get(`${BACKEND_URI}/api/qr?sessionId=${sessionId}`);
       setQrCodeImage(res.data.qrCode);
       setQrUrl(res.data.qrUrl);
       console.log('Generated QR URL from backend:', res.data.qrUrl);
@@ -137,7 +138,7 @@ function ProfessorDashboard() {
 
   const exportAttendance = () => {
     if (sessionActive) {
-      window.location.href = `https://qr-backend-3-0.onrender.com/api/export?sessionId=${sessionId}`;
+      window.location.href = `${BACKEND_URI}/api/export?sessionId=${sessionId}`;
     }
   };
 
@@ -166,7 +167,7 @@ function ProfessorDashboard() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (sessionId) {
-        axios.get(`https://qr-backend-3-0.onrender.com/api/attendance/count?sessionId=${sessionId}`)
+        axios.get(`${BACKEND_URI}/api/attendance/count?sessionId=${sessionId}`)
           .then(res => {
             setCounts({
               present: res.data.present,

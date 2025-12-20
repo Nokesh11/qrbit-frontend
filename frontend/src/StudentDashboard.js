@@ -6,8 +6,9 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { Box, Typography } from "@mui/material";
 import QRScanner from './components/student/QRScanner';
 import AttendanceHistory from './components/student/AttendanceHistory';
+const BACKEND_URI = 'https://qrbit-backend.onrender.com';
 
-const socket = io("https://qr-backend-3-0.onrender.com", { autoConnect: true });
+const socket = io(BACKEND_URI, { autoConnect: true });
 
 function StudentDashboard() {
   const [attendance, setAttendance] = useState([]);
@@ -107,7 +108,7 @@ function StudentDashboard() {
         return { valid: false, error: 'Invalid QR code format' };
       }
 
-      const res = await axios.get('https://qr-backend-3-0.onrender.com/api/validate-qr', {
+      const res = await axios.get(`${BACKEND_URI}/api/validate-qr`, {
         params: { sessionId, qrToken, deviceFingerprint }
       });
       return res.data;
@@ -305,7 +306,7 @@ function StudentDashboard() {
     if (!newToken) return;
 
     try {
-      const res = await axios.get("https://qr-backend-3-0.onrender.com/api/student/attendance", {
+      const res = await axios.get(`${BACKEND_URI}/api/student/attendance`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setAttendance(res.data);

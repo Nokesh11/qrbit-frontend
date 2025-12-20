@@ -1,7 +1,8 @@
 import axios from 'axios';
+const BACKEND_URI = 'https://qrbit-backend.onrender.com';
 
 const api = axios.create({
-  baseURL: 'https://qr-backend-3-0.onrender.com/api', // Keeping the original URL as per request to not change functionality yet
+  baseURL: `${BACKEND_URI}/api`, // Keeping the original URL as per request to not change functionality yet
 });
 
 export const getClasses = () => api.get('/classes');
